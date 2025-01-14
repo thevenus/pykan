@@ -164,9 +164,13 @@ class MultKAN(nn.Module):
         self.act_fun = []
         self.depth = len(width) - 1
         
+        #print('haha1', width)
         for i in range(len(width)):
-            if type(width[i]) == int:
+            #print(type(width[i]), type(width[i]) == int)
+            if type(width[i]) == int or type(width[i]) == np.int64:
                 width[i] = [width[i],0]
+                
+        #print('haha2', width)
             
         self.width = width
         
@@ -196,7 +200,18 @@ class MultKAN(nn.Module):
         
         for l in range(self.depth):
             # splines
-            sp_batch = KANLayer(in_dim=width_in[l], out_dim=width_out[l+1], num=grid, k=k, noise_scale=noise_scale, scale_base_mu=scale_base_mu, scale_base_sigma=scale_base_sigma, scale_sp=1., base_fun=base_fun, grid_eps=grid_eps, grid_range=grid_range, sp_trainable=sp_trainable, sb_trainable=sb_trainable, sparse_init=sparse_init)
+            if isinstance(grid, list):
+                grid_l = grid[l]
+            else:
+                grid_l = grid
+                
+            if isinstance(k, list):
+                k_l = k[l]
+            else:
+                k_l = k
+                    
+            
+            sp_batch = KANLayer(in_dim=width_in[l], out_dim=width_out[l+1], num=grid_l, k=k_l, noise_scale=noise_scale, scale_base_mu=scale_base_mu, scale_base_sigma=scale_base_sigma, scale_sp=1., base_fun=base_fun, grid_eps=grid_eps, grid_range=grid_range, sp_trainable=sp_trainable, sb_trainable=sb_trainable, sparse_init=sparse_init)
             self.act_fun.append(sp_batch)
 
         self.node_bias = []
@@ -1522,6 +1537,10 @@ class MultKAN(nn.Module):
             
             if _ == steps-1 and old_save_act:
                 self.save_act = True
+                
+            if save_fig and _ % save_fig_freq == 0:
+                save_act = self.save_act
+                self.save_act = True
             
             train_id = np.random.choice(dataset['train_input'].shape[0], batch_size, replace=False)
             test_id = np.random.choice(dataset['test_input'].shape[0], batch_size_test, replace=False)
@@ -1579,6 +1598,7 @@ class MultKAN(nn.Module):
                 self.plot(folder=img_folder, in_vars=in_vars, out_vars=out_vars, title="Step {}".format(_), beta=beta)
                 plt.savefig(img_folder + '/' + str(_) + '.jpg', bbox_inches='tight', dpi=200)
                 plt.close()
+                self.save_act = save_act
 
         self.log_history('fit')
         # revert back to original state
