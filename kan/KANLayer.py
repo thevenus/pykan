@@ -191,6 +191,9 @@ class KANLayer(nn.Module):
         batch = x.shape[0]
         #x = torch.einsum('ij,k->ikj', x, torch.ones(self.out_dim, ).to(self.device)).reshape(batch, self.size).permute(1, 0)
         x_pos = torch.sort(x, dim=0)[0]
+        # torch.set_printoptions(threshold=100000)
+        # print("x_POS=", x_pos)
+        # print("x_shape=", x.shape)
         y_eval = coef2curve(x_pos, self.grid, self.coef, self.k)
         num_interval = self.grid.shape[1] - 1 - 2*self.k
         

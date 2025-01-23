@@ -703,7 +703,7 @@ class MultKAN(nn.Module):
         >>> model.update_grid_from_samples(x)
         >>> print(model.act_fun[0].grid)
         ''' 
-        for l in range(self.depth):
+        for l in range(1, self.depth):
             self.get_act(x)
             self.act_fun[l].update_grid_from_samples(self.acts[l])
             

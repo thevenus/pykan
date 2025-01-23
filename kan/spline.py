@@ -111,10 +111,16 @@ def curve2coef(x_eval, y_eval, grid, k):
     y_eval = y_eval.permute(1,2,0).unsqueeze(dim=3)
     #print('y_eval', y_eval.shape)
     device = mat.device
+
+    print(mat.device)  # Should say 'cuda:0'
+    print(y_eval.device)  # Should say 'cuda:0'
     
     #coef = torch.linalg.lstsq(mat, y_eval, driver='gelsy' if device == 'cpu' else 'gels').solution[:,:,:,0]
     try:
         coef = torch.linalg.lstsq(mat, y_eval).solution[:,:,:,0]
+        # print(mat)
+        # print(y_eval)
+        # print(coef)
     except:
         print('lstsq failed')
     
