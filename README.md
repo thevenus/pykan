@@ -1,5 +1,8 @@
 <img width="600" alt="kan_plot" src="https://github.com/KindXiaoming/pykan/assets/23551623/a2d2d225-b4d2-4c1e-823e-bc45c7ea96f9">
 
+# Fork of PyKAN
+This is a fork of PyKAN library, where I will be doing modifications to make it more suitable for training MNIST, CIFAR-10 and other classification tasks as well as hardware implementation.
+
 # Kolmogorov-Arnold Networks (KANs)
 
 This is the github repo for the paper ["KAN: Kolmogorov-Arnold Networks"](https://arxiv.org/abs/2404.19756) and ["KAN 2.0: Kolmogorov-Arnold Networks Meet Science"](https://arxiv.org/abs/2408.10205). You may want to quickstart with [hellokan](https://github.com/KindXiaoming/pykan/blob/master/hellokan.ipynb), try more examples in [tutorials](https://github.com/KindXiaoming/pykan/tree/master/tutorials), or read the documentation [here](https://kindxiaoming.github.io/pykan/).
