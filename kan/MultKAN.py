@@ -1494,9 +1494,12 @@ class MultKAN(nn.Module):
         grid_update_freq = int(stop_grid_update_step / grid_update_num)
 
         if opt == "Adam":
-            optimizer = torch.optim.Adam(self.get_params(), lr=lr)
+            optimizer = torch.optim.AdamW(self.get_params(), lr=lr, weight_decay=1e-4)
+            scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
+
         elif opt == "LBFGS":
             optimizer = LBFGS(self.get_params(), lr=lr, history_size=10, line_search_fn="strong_wolfe", tolerance_grad=1e-32, tolerance_change=1e-32, tolerance_ys=1e-32)
+            scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
 
         results = {}
         results['train_loss'] = []
@@ -1553,6 +1556,7 @@ class MultKAN(nn.Module):
 
             if opt == "LBFGS":
                 optimizer.step(closure)
+                scheduler.step()
 
             if opt == "Adam":
                 pred = self.forward(dataset['train_input'][train_id], singularity_avoiding=singularity_avoiding, y_th=y_th)
@@ -1569,6 +1573,7 @@ class MultKAN(nn.Module):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+                scheduler.step()
 
             test_loss = loss_fn_eval(self.forward(dataset['test_input'][test_id]), dataset['test_label'][test_id])
             

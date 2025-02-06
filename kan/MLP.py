@@ -19,9 +19,11 @@ class MLP(nn.Module):
         self.width = width
         self.depth = depth = len(width) - 1
         for i in range(depth):
-            linears.append(nn.Linear(width[i], width[i+1]))
+            layer = nn.Linear(width[i], width[i+1])
+            # nn.init.xavier_uniform_(layer.weight)
+            linears.append(layer)
         self.linears = nn.ModuleList(linears)
-        
+
         #if activation == 'silu':
         self.act_fun = torch.nn.SiLU()
         self.save_act = save_act
