@@ -1494,8 +1494,8 @@ class MultKAN(nn.Module):
         grid_update_freq = int(stop_grid_update_step / grid_update_num)
 
         if opt == "Adam":
-            optimizer = torch.optim.AdamW(self.get_params(), lr=lr, weight_decay=1e-4)
-            scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.99)
+            optimizer = torch.optim.Adam(self.get_params(), lr=lr, weight_decay=1e-5)
+            scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.991)
 
         elif opt == "LBFGS":
             optimizer = LBFGS(self.get_params(), lr=lr, history_size=10, line_search_fn="strong_wolfe", tolerance_grad=1e-32, tolerance_change=1e-32, tolerance_ys=1e-32)
@@ -1514,7 +1514,7 @@ class MultKAN(nn.Module):
             batch_size_test = dataset['test_input'].shape[0]
         else:
             batch_size = batch
-            batch_size_test = batch
+            batch_size_test = dataset['test_input'].shape[0]
 
         global train_loss, reg_
 
@@ -1544,7 +1544,7 @@ class MultKAN(nn.Module):
             if _ == steps-1 and old_save_act:
                 self.save_act = True
                 
-            if save_fig and _ % save_fig_freq == 0:
+            if save_fig and _ % save_fig_freq == 0 and _ != 0:
                 save_act = self.save_act
                 self.save_act = True
             
@@ -1560,6 +1560,8 @@ class MultKAN(nn.Module):
 
             if opt == "Adam":
                 pred = self.forward(dataset['train_input'][train_id], singularity_avoiding=singularity_avoiding, y_th=y_th)
+                if (torch.isnan(pred).any()):
+                    break
                 train_loss = loss_fn(pred, dataset['train_label'][train_id])
                 if self.save_act:
                     if reg_metric == 'edge_backward':
@@ -1602,7 +1604,7 @@ class MultKAN(nn.Module):
                     pbar.set_description(string % data)
                     
             
-            if save_fig and _ % save_fig_freq == 0:
+            if save_fig and _ % save_fig_freq == 0 and _ != 0:
                 self.plot(folder=img_folder, in_vars=in_vars, out_vars=out_vars, title="Step {}".format(_), beta=beta)
                 plt.savefig(img_folder + '/' + str(_) + '.jpg', bbox_inches='tight', dpi=200)
                 plt.close()
