@@ -24,8 +24,15 @@ class MLP(nn.Module):
             linears.append(layer)
         self.linears = nn.ModuleList(linears)
 
-        #if activation == 'silu':
-        self.act_fun = torch.nn.SiLU()
+        if act == 'silu':
+            self.act_fun = torch.nn.SiLU()
+        elif act == 'leaky_relu':
+            self.act_fun = torch.nn.LeakyReLU()
+        elif act == 'relu':
+            self.act_fun = torch.nn.ReLU()
+        else:
+            self.act_fun = torch.nn.SiLU()
+
         self.save_act = save_act
         self.acts = None
         
@@ -217,7 +224,8 @@ class MLP(nn.Module):
             loss_fn = loss_fn_eval = loss_fn
 
         if opt == "Adam":
-            optimizer = torch.optim.Adam(self.parameters(), lr=lr)
+            optimizer = torch.optim.Adam(self.parameters(), lr=lr, weight_decay=1e-4)
+            scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.9)
         elif opt == "LBFGS":
             optimizer = LBFGS(self.parameters(), lr=lr, history_size=10, line_search_fn="strong_wolfe", tolerance_grad=1e-32, tolerance_change=1e-32, tolerance_ys=1e-32)
 
@@ -275,6 +283,9 @@ class MLP(nn.Module):
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
+            
+                if _ % 100 == 0 and _ != 0:
+                    scheduler.step()
 
             test_loss = loss_fn_eval(self.forward(dataset['test_input'][test_id].to(self.device)), dataset['test_label'][test_id].to(self.device))
             
